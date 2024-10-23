@@ -58,7 +58,7 @@ jobs:
         path: ${{ env.PACKAGE }}/*.pkg.tar.zst
 
   package_repo:
-    if: contains(github.ref,'refs/heads/master')
+    if: contains(github.ref,'refs/heads/main')
     needs: [prepare_jobs, build]
     runs-on: ubuntu-latest
     container:  archlinux/archlinux:base-devel
@@ -87,7 +87,7 @@ jobs:
         path: repo.tar
 
   publish_repo:
-    if: contains(github.ref,'refs/heads/master')
+    if: contains(github.ref,'refs/heads/main')
     needs: [package_repo]
     runs-on: ubuntu-latest
     environment:
