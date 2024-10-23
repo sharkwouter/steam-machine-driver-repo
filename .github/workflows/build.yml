@@ -39,12 +39,12 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build packages
       run: |
-        useradd --user-group --create-home --home-dir /build --shell /bin/bash build
+        echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers
+        useradd --user-group --create-home --home-dir /build --groups wheel --shell /bin/bash build
         for f in ${{ matrix.packages }}; do
         chown -R build:build $f
         cd $f
-        sudo -u build LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 makepkg --noconfirm
-        pacman -U --noconfirm *.pkg.tar.zst --overwrite '*'
+        sudo -u build LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 makepkg --noconfirm --syncdeps
         cd ..
         done
     - name: Store package
