@@ -1,0 +1,102 @@
+name: Packages
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  packages: write
+
+jobs:
+  prepare_jobs:
+    runs-on: ubuntu-latest
+    container: python:3-alpine
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate build list
+        id: set-matrix
+        run: |
+          echo "build_list=$(./get_depends.py)" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
+    outputs:
+      build_list: ${{ steps.set-matrix.outputs.build_list }}
+
+  build:
+    needs: [prepare_jobs]
+    runs-on: ubuntu-latest
+    container: archlinux/archlinux:base-devel
+    strategy:
+      fail-fast: false
+      matrix:
+        packages: ${{ fromJson(needs.prepare_jobs.outputs.build_list) }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build packages
+      run: |
+        adduser -D -h /build -s /bin/bash build
+        chown -R build:build /build
+        for f in ${{ matrix.packages }}; do
+        chown -R build:build $f
+        cd $f
+        sudo -u build LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 makepkg --noconfirm
+        pacman -U --noconfirm *.pkg.tar.gz --overwrite '*'
+        cd ..
+        done
+    - name: Store package
+      run: |
+        export PACKAGE=`echo ${{ matrix.packages }} | awk '{print $NF}'`
+        echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
+    - uses: actions/upload-artifact@v4
+      with:
+        name: artifact-${{ env.PACKAGE }}
+        path: ${{ env.PACKAGE }}/*.pkg.tar.gz
+
+  package_repo:
+    if: contains(github.ref,'refs/heads/master')
+    needs: [prepare_jobs, build]
+    runs-on: ubuntu-latest
+    container:  archlinux/archlinux:base-devel
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+    - name: Create repo files
+      run: |
+        chown -R $(id -nu):$(id -ng) .
+        mkdir repo
+        cp artifact-*/*.pkg.tar.gz repo/
+        ./make-repo-html.sh
+        cd repo
+        repo-add steam-machine.db.tar.gz *.pkg.tar.gz
+        mv steam-machine.db.tar.gz steam-machine.db
+        mv steam-machine.files.tar.gz steam-machine.files
+        tar -cvf ../repo.tar ./*
+    - name: Upload repo artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: github-pages
+        path: repo.tar
+
+  publish_repo:
+    if: contains(github.ref,'refs/heads/master')
+    needs: [package_repo]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
