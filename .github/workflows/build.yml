@@ -44,7 +44,7 @@ jobs:
         chown -R build:build $f
         cd $f
         sudo -u build LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 makepkg --noconfirm
-        pacman -U --noconfirm *.pkg.tar.gz --overwrite '*'
+        pacman -U --noconfirm *.pkg.tar.zst --overwrite '*'
         cd ..
         done
     - name: Store package
@@ -54,7 +54,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: artifact-${{ env.PACKAGE }}
-        path: ${{ env.PACKAGE }}/*.pkg.tar.gz
+        path: ${{ env.PACKAGE }}/*.pkg.tar.zst
 
   package_repo:
     if: contains(github.ref,'refs/heads/master')
@@ -72,10 +72,10 @@ jobs:
       run: |
         chown -R $(id -nu):$(id -ng) .
         mkdir repo
-        cp artifact-*/*.pkg.tar.gz repo/
+        cp artifact-*/*.pkg.tar.zst repo/
         ./make-repo-html.sh
         cd repo
-        repo-add steam-machine.db.tar.gz *.pkg.tar.gz
+        repo-add steam-machine.db.tar.gz *.pkg.tar.zst
         mv steam-machine.db.tar.gz steam-machine.db
         mv steam-machine.files.tar.gz steam-machine.files
         tar -cvf ../repo.tar ./*
