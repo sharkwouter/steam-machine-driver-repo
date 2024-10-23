@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build packages
       run: |
-        echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers
+        echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
         useradd --user-group --create-home --home-dir /build --groups wheel --shell /bin/bash build
         for f in ${{ matrix.packages }}; do
         chown -R build:build $f
