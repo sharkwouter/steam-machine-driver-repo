@@ -21,7 +21,7 @@ Take a look [here](https://sharkwouter.github.io/steam-machine-driver-repo/) to 
 Installing packages can be done with:
 
 ```shell
-pacman -Sy package
+pacman -Sy steam-machine/package
 ```
 
 Replace package with the name of the package.
