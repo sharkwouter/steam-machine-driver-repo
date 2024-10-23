@@ -16,53 +16,8 @@ GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-sharkwouter/steam-machine-repo}"
 INDEX_TABLE_CONTENT=""
 
 # Build the html pages
-for PKGBUILD in $(find . -name "PKGBUILD" | sort); do
-  		# Make sure optional variables are from current PKGBUILD
-  		unset groups
-    		unset license
-      		unset depends
-
-		source "${PKGBUILD}"
-		UPDATED=$(git log -1 --format=%cd --date=short -- "${PKGBUILD}")
-		DOWNLOAD_URL="${pkgname}-${pkgver}-${pkgrel}-${arch}.pkg.tar.gz"
-
-		# Convert lists to strings
-		ARCH="${arch[*]}"
-		LICENSE="${license[*]}"
-		GROUP_LIST="${groups[*]}"
-
-		# Get file size info
-		FILENAME="repo/${DOWNLOAD_URL}"
-		if [ -f "${FILENAME}" ]; then
-  			PKGSIZE="$(ls -l  "${FILENAME}"|cut -d' ' -f5|numfmt --to iec --suffix=B --format "%.1f")"
-			INSTSIZE="$(gunzip -c "${FILENAME}"|grep -a '^size = '|cut -d' ' -f3|numfmt --to iec --suffix=B --format "%.1f")"
-		fi
-
-		# List dependencies
-		if [ ! -n "${depends[*]}" ]; then
-			DEPS="No dependencies"
-		else
-			DEPS="<ul>"
-			for dep in "${depends[@]}"; do
-				DEPS="${DEPS}<li><a href=\"${dep}.html\">${dep}</a></li>"
-			done
-			DEPS="${DEPS}</ul>"
-		fi
-
-		# List content of files
-		if [ -f "${FILENAME}" ]; then
-			CONTENT="<ul>"
-			for item in $(tar -tzf $FILENAME | grep -v '\.BUILDINFO\|\.MTREE\|\.PKGINFO\|/$'); do
-				CONTENT="${CONTENT}<li>${item}</li>"
-			done
-			CONTENT="${CONTENT}</ul>"
-		else
-			CONTENT="Not known"
-		fi
-
-		envsubst < package.html > "repo/${pkgname}.html"
-
-		INDEX_TABLE_CONTENT="${INDEX_TABLE_CONTENT}<tr><td><a href=\"${pkgname}.html\">${pkgname}</a></td><td>${pkgver}-${pkgrel}</td><td>${pkgdesc}</td><td>${GROUP_LIST}</td><td>${UPDATED}</td></tr>"
+for FILE in $(ls repo); do
+	INDEX_CONTENT="${INDEX_TABLE_CONTENT}<a href=\"${FILE}\">${FILE}</a><br>"
 done
 
 envsubst < index.html > repo/index.html
