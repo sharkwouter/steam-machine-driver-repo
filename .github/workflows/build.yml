@@ -21,7 +21,7 @@ jobs:
       - name: Generate build list
         id: set-matrix
         run: |
-          echo "build_list=$(find ./ -type f -name PKGBUILD|cut -d'/' -f2|tr '\n' ' ')" >> $GITHUB_OUTPUT
+          echo "build_list=[\"$(find * -type f -name PKGBUILD -printf '"%h",'|sed -z 's/,\n//g')\"]" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
     outputs:
       build_list: ${{ steps.set-matrix.outputs.build_list }}
@@ -44,6 +44,7 @@ jobs:
         for f in ${{ matrix.packages }}; do
         chown -R build:build $f
         cd $f
+        makepkg --noconfirm --syncdeps --nobuild --noextract
         sudo -u build LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 makepkg --noconfirm
         pacman -U --noconfirm *.pkg.tar.gz --overwrite '*'
         cd ..
