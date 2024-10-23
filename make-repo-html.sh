@@ -2,7 +2,6 @@
 
 #Change directory to the directory of this script
 cd "$(dirname "$0")"
-mkdir -p repo
 
 # Export all variables
 set -a
@@ -12,12 +11,12 @@ set -e
 
 # Set global variables
 GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-sharkwouter}"
-GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-sharkwouter/steam-machine-repo}"
-INDEX_TABLE_CONTENT=""
+GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-sharkwouter/steam-machine-driver-repo}"
+INDEX_CONTENT=""
 
 # Build the html pages
 for FILE in $(ls repo); do
-	INDEX_CONTENT="${INDEX_TABLE_CONTENT}<a href=\"${FILE}\">${FILE}</a><br>"
+	INDEX_CONTENT="${INDEX_CONTENT}<a href=\"${FILE}\">${FILE}</a><br>"
 done
 
 envsubst < index.html > repo/index.html

@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>${GITHUB_REPOSITORY_OWNER}&#39;s package index</title>
+        <title>${GITHUB_REPOSITORY} Arch Linux Repository</title>
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <p><h1>${GITHUB_REPOSITORY_OWNER}&#39;s package index</h1></p>
+        <h1>${GITHUB_REPOSITORY_OWNER}&#39;s package index</h1>
+        <p>
+            This repository hosts a set of driver packages for the Alienware Steam Machine for Arch Linux. This can help getting SteamOS running.
+        </p>
+        <h2>Adding the repo to Arch Linux</h2>
+        <p>
+            Add the following lines to your pacman.conf:
+<pre><code>[steam-machine]
+SigLevel = Optional TrustAll
+Server = https://sharkwouter.github.io/steam-machine-driver-repo/</code></pre>
+        </p>
+        <h2>Files in repo</h2>
         <p>
             ${INDEX_CONTENT}
         </p>
